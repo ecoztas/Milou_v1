@@ -10,31 +10,19 @@ header("Content-Type: text/html; charset=utf-8");
  * @since       Version 1.0.0
  */
 
-// -----------------------------------------------------------------------------
 // Define constant.
-// -----------------------------------------------------------------------------
 defined('ROOT_PATH') or define('ROOT_PATH', realpath(__DIR__));
 defined('DIR_SEP') or define('DIR_SEP', '/');
-// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
 // Include file(s).
-// -----------------------------------------------------------------------------
 include(ROOT_PATH . DIR_SEP . 'config.php');
-// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
 // Define global variable(s).
-// -----------------------------------------------------------------------------
-// $found_url 		= array();
-// $visited_url 	= array();
 $page_details = array();
-$connection   = null;
-// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-// Main block.
-// -----------------------------------------------------------------------------
+/**
+ * Main block.
+ */
 if (php_sapi_name() === 'cli') {
 	$file = ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data_file'];
 	if (file_exists($file)) {
@@ -45,7 +33,8 @@ if (php_sapi_name() === 'cli') {
             if (preg_match(SYSTEM_SETTINGS['reg_url'], $base_url)) {
 	            $const_url    = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
 				array_shift($page_details);
-				crawler($base_url, $const_url);
+
+				crawler($base_url, $const_url); // Start
             } else {
             	exit('$base_url is not URL!');
             }
@@ -58,18 +47,16 @@ if (php_sapi_name() === 'cli') {
 } else {
 	exit('This is for CLI programmers not for browserBoys!');
 }
-// -----------------------------------------------------------------------------
 
 /**
- * -----------------------------------------------------------------------------
  * Crawler method is crawling URL from web page.
  * @param  string $base_url
  * @param  string $const_url
  * @return void
- * -----------------------------------------------------------------------------
  */
 function crawler($base_url, $const_url)
 {
+	global $page_details;
 	static $found_url = array();
 	static $visited_url = array();
 
@@ -116,7 +103,7 @@ function crawler($base_url, $const_url)
 					$found_url[]   = $a_href;
 					$visited_url[] = $a_href;
 
-					scraper($a_href);
+					!empty($page_details) ? scraper($a_href) : null;
 				}
 			}
 		}
@@ -124,18 +111,21 @@ function crawler($base_url, $const_url)
 
 	array_shift($found_url);
 
-	foreach ($found_url as $base_url) {
-		crawler($base_url, $const_url);
+	if (count($found_url > 0)) { // Go on
+		foreach ($found_url as $base_url) {
+			crawler($base_url, $const_url);
+		}	
+	} else { // Finished
+		echo(PHP_EOL);
+		echo('Crawling finished');
+		echo(PHP_EOL);
 	}
 }
-// -----------------------------------------------------------------------------
 
 /**
- * -----------------------------------------------------------------------------
  * Scraper method is scraping data from web page.
  * @param  string $base_url
  * @return void
- * -----------------------------------------------------------------------------
  */
 function scraper($base_url)
 {
@@ -155,11 +145,8 @@ function scraper($base_url)
 
 	unset($curl);
 
-    $page_encoding = strtolower(mb_detect_encoding ($html));
-
-    if ($page_encoding != 'utf-8') {
-    	$html = mb_convert_encoding($html,'ISO-8859-1','utf-8');
-    }
+    $page_encoding = strtolower(mb_detect_encoding($html));
+    $page_encoding != 'utf-8' ? $html = mb_convert_encoding($html, 'ISO-8859-1', 'utf-8') : null;
 
 	libxml_use_internal_errors(true);
 	$document = new DOMDocument();
@@ -168,9 +155,9 @@ function scraper($base_url)
 
 	echo(PHP_EOL . $base_url . PHP_EOL);
 
-	$control_data = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
+	$control_first_data = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
 
-	if (!empty($control_data)) {
+	if (!empty($control_first_data)) {
 		foreach ($page_details as $detail) {
 			$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
 			$data = sanitize($data);
@@ -182,11 +169,25 @@ function scraper($base_url)
 		database($page_content);
 	}
 }
-// -----------------------------------------------------------------------------
 
+/**
+ * Sanitize datas.
+ * @param  string $input
+ * @return string
+ */
+function sanitize($input)
+{
+	return(preg_replace(SYSTEM_SETTINGS['reg_clear'], '', $input));
+}
+
+/**
+ * Database connection and saving records
+ * @param  array $records 
+ * @return void
+ */
 function database($records)
 {
-	global $connection;
+	static $connection = null;
 
 	// ---> Connection control
 	if (!@mysqli_ping($connection)) {
@@ -197,31 +198,19 @@ function database($records)
 			SYSTEM_SETTINGS['database']['info']['db_name']
 		);
 
-		(mysqli_connect_errno()) ? exit('Connection failed!') : mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
-		mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
+		if (mysqli_connect_errno()) {
+			exit('Connection is failed! ' . mysqli_error($connection));
+		} else {
+			mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
+			mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
+		}		
 	}
 	// Connection control <---
 
 	$columns = implode(', ', SYSTEM_SETTINGS['database']['info']['tbl_columns']);
 	$records = '\'' . implode('\',' . '\'', $records) . '\'';
-
-	$query   = "INSERT INTO tbl_firma ($columns) VALUES ($records)";
+	$query   = "INSERT INTO " . SYSTEM_SETTINGS['database']['info']['db_table'] . " ($columns) VALUES ($records)";
 	$result  = mysqli_query($connection, $query);
-	
-	if (!$result) {
-		exit('Failed: ' . mysqli_error($connection));
-	}
-}
 
-/**
- * -----------------------------------------------------------------------------
- * Sanitize datas.
- * @param  string $input
- * @return string
- * -----------------------------------------------------------------------------
- */
-function sanitize($input)
-{
-	return(preg_replace(SYSTEM_SETTINGS['reg_clear'], '', $input));
+	!$result ? exit('Failed! ' . mysqli_error($connection)) : true;
 }
-// -----------------------------------------------------------------------------
