@@ -10,6 +10,12 @@ header("Content-Type: text/html; charset=utf-8");
  * @since       Version 1.0.0
  */
 
+// php.ini Settings.
+error_reporting(E_ALL);
+ini_set('memory_limit', -1);
+ini_set('max_execution_time', -1);
+gc_enable();
+
 // Define constant.
 defined('ROOT_PATH') or define('ROOT_PATH', realpath(__DIR__));
 defined('DIR_SEP') or define('DIR_SEP', '/');
@@ -20,10 +26,9 @@ include(ROOT_PATH . DIR_SEP . 'config.php');
 // Define global variable(s).
 $page_details = array();
 
-/**
- * Main block.
- */
+/** Main block */
 if (php_sapi_name() === 'cli') {
+	!curl_version() ? exit('cURL is not found!') : true; // cURL control
 	$file = ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data_file'];
 	if (file_exists($file)) {
 		$page = file_get_contents($file); // read data.txt
@@ -71,8 +76,8 @@ function crawler($base_url, $const_url)
 
 	unset($curl);
 
-	$document = new DOMDocument();
 	libxml_use_internal_errors(true);
+	$document = new DOMDocument();
 	@$document->loadHTML($html);
 
 	$a_list = $document->getElementsByTagName('a');

@@ -10,22 +10,6 @@ defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
  * @since       Version 1.0.0
  */
 
-// php.ini Settings.
-error_reporting(E_ALL);
-ini_set('default_charset', 'utf-8');
-ini_set('memory_limit', -1);
-ini_set('max_execution_time', -1);
-ini_set('max_input_time', -1);
-ini_set('file_uploads', 1);
-ini_set('upload_max_filesize', '5M');
-ini_set('session.gc_maxlifetime', 14400);
-ini_set('date.timezone', 'Europe/Istanbul');
-ini_set('expose_php', -1);
-ini_set('allow_url_fopen', -1);
-ini_set('allow_url_include', -1);
-ini_set('disable_functions', 'exec, passthru, shell_exec, system, proc_open, popen, curl_exec, curl_multi_exec, parse_ini_file, show_source');
-gc_enable();
-
 // System settings (Database, HTTP Header, User Agent and Regex).
 const SYSTEM_SETTINGS = array(
 	'data_file' => 'data.txt',
