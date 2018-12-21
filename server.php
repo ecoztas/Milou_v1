@@ -26,16 +26,18 @@ include(ROOT_PATH . DIR_SEP . 'config.php');
 // Define global variable(s).
 $page_details = array();
 
+!curl_version() ? exit('cURL is not found!') : true; // cURL control
+!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true; // PHP version control
+
 /** Main block */
 if (php_sapi_name() === 'cli') {
-	!curl_version() ? exit('cURL is not found!') : true; // cURL control
 	$file = ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data_file'];
 	if (file_exists($file)) {
 		$page = file_get_contents($file); // read data.txt
 		if (!empty($page)) {
 			$page_details = array_map('trim', explode(',', $page));
             $base_url     = $page_details[0];
-            if (preg_match(SYSTEM_SETTINGS['reg_url'], $base_url)) {
+            if (preg_match(URL_FORMAT, $base_url)) {
 	            $const_url    = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
 				array_shift($page_details);
 
@@ -65,12 +67,15 @@ function crawler($base_url, $const_url)
 	static $found_url = array();
 	static $visited_url = array();
 
-	$curl = curl_init($base_url);
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-	curl_setopt($curl, CURLOPT_USERAGENT, SYSTEM_SETTINGS['user_agent']);
-	curl_setopt($curl, CURLOPT_HTTPHEADER, SYSTEM_SETTINGS['http_header']);
-	curl_setopt($curl, CURLOPT_ENCODING, '');
+	$curl = curl_init();
+	curl_setopt_array($curl, array(
+		CURLOPT_URL            => $base_url,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_FOLLOWLOCATION => true,
+		CURLOPT_USERAGENT      => USER_AGENT,
+		CURLOPT_HTTPHEADER     => HTTP_HEADER,
+		CURLOPT_ENCODING       => ''
+	));
 	$html = curl_exec($curl);
 	curl_close($curl);
 
@@ -108,6 +113,7 @@ function crawler($base_url, $const_url)
 					$found_url[]   = $a_href;
 					$visited_url[] = $a_href;
 
+					echo(PHP_EOL . $a_href . PHP_EOL);
 					!empty($page_details) ? scraper($a_href) : null;
 				}
 			}
@@ -139,12 +145,15 @@ function scraper($base_url)
 
 	$page_content = array();
 
-	$curl = curl_init($base_url);
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-	curl_setopt($curl, CURLOPT_USERAGENT, SYSTEM_SETTINGS['user_agent']);
-	curl_setopt($curl, CURLOPT_HTTPHEADER, SYSTEM_SETTINGS['http_header']);
-	curl_setopt($curl, CURLOPT_ENCODING, '');
+	$curl = curl_init();
+	curl_setopt_array($curl, array(
+		CURLOPT_URL            => $base_url,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_FOLLOWLOCATION => true,
+		CURLOPT_USERAGENT      => USER_AGENT,
+		CURLOPT_HTTPHEADER     => HTTP_HEADER,
+		CURLOPT_ENCODING       => ''
+	));
 	$html = curl_exec($curl);
 	curl_close($curl);
 
@@ -158,8 +167,6 @@ function scraper($base_url)
 	@$document->loadHTML($html);
 	$xpath = new DOMXPath($document);
 
-	echo(PHP_EOL . $base_url . PHP_EOL);
-
 	$control_first_data = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
 
 	if (!empty($control_first_data)) {
@@ -171,6 +178,7 @@ function scraper($base_url)
 
 		array_push($page_content, $base_url);
 		print_r($page_content);
+
 		database($page_content);
 	}
 }
@@ -182,7 +190,7 @@ function scraper($base_url)
  */
 function sanitize($input)
 {
-	return(preg_replace(SYSTEM_SETTINGS['reg_clear'], '', $input));
+	return(preg_replace(TEXT_CLEANER, '', $input));
 }
 
 /**
@@ -197,10 +205,10 @@ function database($records)
 	// ---> Connection control
 	if (!@mysqli_ping($connection)) {
 		$connection = mysqli_connect(
-			SYSTEM_SETTINGS['database']['auth']['hostname'],
-			SYSTEM_SETTINGS['database']['auth']['username'],
-			SYSTEM_SETTINGS['database']['auth']['password'],
-			SYSTEM_SETTINGS['database']['info']['db_name']
+			SYSTEM_SETTINGS['database']['hostname'],
+			SYSTEM_SETTINGS['database']['username'],
+			SYSTEM_SETTINGS['database']['password'],
+			SYSTEM_SETTINGS['database']['db_name']
 		);
 
 		if (mysqli_connect_errno()) {
@@ -212,9 +220,9 @@ function database($records)
 	}
 	// Connection control <---
 
-	$columns = implode(', ', SYSTEM_SETTINGS['database']['info']['tbl_columns']);
+	$columns = implode(', ', SYSTEM_SETTINGS['database']['schema']);
 	$records = '\'' . implode('\',' . '\'', $records) . '\'';
-	$query   = "INSERT INTO " . SYSTEM_SETTINGS['database']['info']['db_table'] . " ($columns) VALUES ($records)";
+	$query   = "INSERT INTO " . SYSTEM_SETTINGS['database']['db_table'] . " ($columns) VALUES ($records)";
 	$result  = mysqli_query($connection, $query);
 
 	!$result ? exit('Failed! ' . mysqli_error($connection)) : true;
