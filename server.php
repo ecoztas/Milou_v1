@@ -23,39 +23,37 @@ defined('DIR_SEP') or define('DIR_SEP', '/');
 // Include file(s).
 include(ROOT_PATH . DIR_SEP . 'config.php');
 
+// CONTROLS
 // cURL control
 !curl_version() ? exit('cURL is not found!') : true; 
-
 // PHP version control
-!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true; 
+!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true;
+// CLI running control
+!php_sapi_name() === 'cli' ? exit('This is for CLI programmers not for browserBoys!') : true;
 
 // Define global variable(s).
 $page_details = array();
 
 /** Main block */
-if (php_sapi_name() === 'cli') {
-	$file = ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data_file'];
-	if (file_exists($file)) {
-		$page = file_get_contents($file); // read data.txt
-		if (!empty($page)) {
-			$page_details = array_map('trim', explode(',', $page));
-            $base_url     = $page_details[0];
-            if (preg_match(URL_FORMAT, $base_url)) {
-	            $const_url    = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
-				array_shift($page_details);
+$file = ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data_file'];
+if (file_exists($file)) {
+	$page = file_get_contents($file); // read data.txt
+	if (!empty($page)) {
+		$page_details = array_map('trim', explode(',', $page));
+        $base_url     = $page_details[0];
+        if (preg_match(URL_FORMAT, $base_url)) {
+            $const_url    = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
+			array_shift($page_details);
 
-				crawler($base_url, $const_url); // Start
-            } else {
-            	exit('$base_url is not URL!');
-            }
-		} else {
-			exit(SYSTEM_SETTINGS['data_file'] . ' is empty!');
-		}
+			crawler($base_url, $const_url); // Start
+        } else {
+        	exit('$base_url is not URL!');
+        }
 	} else {
-		exit(SYSTEM_SETTINGS['data_file'] . ' is not found!');
+		exit(SYSTEM_SETTINGS['data_file'] . ' is empty!');
 	}
 } else {
-	exit('This is for CLI programmers not for browserBoys!');
+	exit(SYSTEM_SETTINGS['data_file'] . ' is not found!');
 }
 
 /**
