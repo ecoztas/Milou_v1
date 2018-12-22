@@ -23,11 +23,14 @@ defined('DIR_SEP') or define('DIR_SEP', '/');
 // Include file(s).
 include(ROOT_PATH . DIR_SEP . 'config.php');
 
+// cURL control
+!curl_version() ? exit('cURL is not found!') : true; 
+
+// PHP version control
+!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true; 
+
 // Define global variable(s).
 $page_details = array();
-
-!curl_version() ? exit('cURL is not found!') : true; // cURL control
-!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true; // PHP version control
 
 /** Main block */
 if (php_sapi_name() === 'cli') {
@@ -64,7 +67,7 @@ if (php_sapi_name() === 'cli') {
 function crawler($base_url, $const_url)
 {
 	global $page_details;
-	static $found_url = array();
+	static $found_url   = array();
 	static $visited_url = array();
 
 	$curl = curl_init();
@@ -167,9 +170,9 @@ function scraper($base_url)
 	@$document->loadHTML($html);
 	$xpath = new DOMXPath($document);
 
-	$control_first_data = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
+	$is_first_data_exist = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
 
-	if (!empty($control_first_data)) {
+	if (!empty($is_first_data_exist)) {
 		foreach ($page_details as $detail) {
 			$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
 			$data = sanitize($data);

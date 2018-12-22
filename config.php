@@ -1,6 +1,15 @@
 <?php
 defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
 
+/**
+ * @package     Milou_v1
+ * @author      Emre Can ÖZTAŞ (ecoz) <oztasemrecan@gmail.com>
+ * @copyright   Copyright (c) 2018, Emre Can ÖZTAŞ. (https://emrecanoztas.com/)
+ * @license     http://opensource.org/licenses/MIT  MIT License
+ * @link        https://github.com/oztasemrecan/php-ping
+ * @since       Version 1.0.0
+ */
+
 // HTTP Header
 defined('HTTP_HEADER') or define('HTTP_HEADER', array(
     'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
