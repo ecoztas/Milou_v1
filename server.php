@@ -172,9 +172,13 @@ function scraper($base_url)
 
 	if (!empty($is_first_data_exist)) {
 		foreach ($page_details as $detail) {
-			$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
-			$data = sanitize($data);
-			!empty(trim($data)) ? array_push($page_content, $data) : array_push($page_content, '-');
+			if ($detail === 'null' || $detail === null) {
+				array_push($page_content, '-');
+			} else {
+				$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
+				$data = sanitize($data);
+				!empty(trim($data)) ? array_push($page_content, $data) : array_push($page_content, '-');				
+			}
 		}
 
 		array_push($page_content, $base_url);
@@ -191,7 +195,12 @@ function scraper($base_url)
  */
 function sanitize($input)
 {
-	return(preg_replace(TEXT_CLEANER, '', $input));
+	$data = preg_replace(TEXT_CLEANER, '', $input);
+	in_array(mb_substr($data, 0, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', 0, 1)) : false;
+	in_array(mb_substr($data, -1, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', -1, 1)) : false;
+	$data = trim($data);
+	
+	return($data);
 }
 
 /**

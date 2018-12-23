@@ -10,6 +10,27 @@ defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
  * @since       Version 1.0.0
  */
 
+// System settings
+defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
+    'data_file'      => 'data.txt',
+    'database'       => array(
+        'hostname' => 'localhost',
+        'username' => 'root',
+        'password' => '',
+        'db_name'  => 'db_firma',
+        'db_table' => 'tbl_firma',
+        'schema'   => array(
+            'firma_adi', 
+            'sehir', 
+            'adres', 
+            'telefon_1', 
+            'telefon_2', 
+            'website', 
+            'url'),
+        'charset'  => 'utf8'
+    )
+));
+
 // HTTP Header
 defined('HTTP_HEADER') or define('HTTP_HEADER', array(
     'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
@@ -35,23 +56,68 @@ defined('TEXT_CLEANER') or define('TEXT_CLEANER', array(
     '@<![\s\S]*?--[ \t\n\r]*>@'         // Strip multi-line comments
 ));
 
-// System settings
-defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
-    'data_file'      => 'data.txt',
-    'database'       => array(
-        'hostname' => 'localhost',
-        'username' => 'root',
-        'password' => '',
-        'db_name'  => 'db_firma',
-        'db_table' => 'tbl_firma',
-        'schema'   => array(
-            'firma_adi', 
-            'sehir', 
-            'adres', 
-            'telefon_1', 
-            'telefon_2', 
-            'website', 
-            'url'),
-        'charset'  => 'utf8'
-    )
+// Punctuation characters list
+defined('MARKS_LIST') or define('MARKS_LIST', array(
+    '+',
+    ',',
+    '.',
+    '-',
+    '\'',
+    '"',
+    '&',
+    '!',
+    '?',
+    ':',
+    ';',
+    '#',
+    '~',
+    '=',
+    '/',
+    '$',
+    '£',
+    '^',
+    '(',
+    ')',
+    '_',
+    '<',
+    '>',
+    '{',
+    '}',
+    '«',
+    '»',
+    '␠',
+    '@',
+    '·',
+    '*',
+    '•',
+    '°',
+    '¡',
+    '¿',
+    '¬',
+    '№',
+    '%',
+    '|',
+    '¶',
+    '§',
+    '¨',
+    '¦',
+    '⁂',
+    '☞',
+    '∴',
+    '‽',
+    '※',
+    '[',
+    ']',
+    '¤',
+    '¢',
+    '$',
+    '€',
+    '£',
+    '¥',
+    '₩',
+    '₪',
+    '†',
+    '‡',
+    '‰',
+    '‱',
 ));
