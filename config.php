@@ -20,13 +20,17 @@ defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
         'db_name'  => 'db_firma',
         'db_table' => 'tbl_firma',
         'schema'   => array(
-            'firma_adi', 
-            'sehir', 
-            'adres', 
-            'telefon_1', 
-            'telefon_2', 
-            'website', 
-            'url'),
+            'firma_adi',
+            'sektor',
+            'adres',
+            'sehir',
+            'ilce',
+            'telefon_1',
+            'telefon_2',
+            'e_posta',
+            'website',
+            'f_url' 
+            ),
         'charset'  => 'utf8'
     )
 ));

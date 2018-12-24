@@ -99,7 +99,8 @@ function crawler($base_url, $const_url)
 			} else if (substr($a_href, 0, 2) == "./") {
 				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . dirname(parse_url($base_url)["path"]).substr($a_href, 1);
 			} else if (substr($a_href, 0, 1) == "#") {
-				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . parse_url($base_url)["path"] . $a_href;
+				// $a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . parse_url($base_url)["path"] . $a_href;
+				continue;
 			} else if (substr($a_href, 0, 3) == "../") {
 				$a_href = parse_url($base_url)["scheme"]."://".parse_url($base_url)["host"]."/".$a_href;
 			} else if (substr($a_href, 0, 11) == "javascript:") {
@@ -123,7 +124,7 @@ function crawler($base_url, $const_url)
 
 	array_shift($found_url);
 
-	if (count($found_url > 0)) { // Go on
+	if (count($found_url) > 0) { // Go on
 		foreach ($found_url as $base_url) {
 			crawler($base_url, $const_url);
 		}	
