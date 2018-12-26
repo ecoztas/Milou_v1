@@ -12,6 +12,7 @@ defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
 
 // System settings
 defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
+    'data_dir'       => 'data/',
     'data_file'      => 'data.txt',
     'database'       => array(
         'hostname' => 'localhost',
@@ -31,7 +32,7 @@ defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
             'website',
             'f_url' 
             ),
-        'charset'  => 'utf8'
+        'charset'  => 'UTF8'
     )
 ));
 
@@ -62,7 +63,7 @@ defined('TEXT_CLEANER') or define('TEXT_CLEANER', array(
 
 // Punctuation characters list
 defined('MARKS_LIST') or define('MARKS_LIST', array(
-    '+',
+    '+', 
     ',',
     '.',
     '-',
@@ -80,8 +81,8 @@ defined('MARKS_LIST') or define('MARKS_LIST', array(
     '$',
     '£',
     '^',
-    '(',
-    ')',
+    // '(',
+    // ')',
     '_',
     '<',
     '>',

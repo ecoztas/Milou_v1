@@ -99,7 +99,7 @@ function crawler($base_url, $const_url)
 			} else if (substr($a_href, 0, 2) == "./") {
 				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . dirname(parse_url($base_url)["path"]).substr($a_href, 1);
 			} else if (substr($a_href, 0, 1) == "#") {
-				// $a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . parse_url($base_url)["path"] . $a_href;
+				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . parse_url($base_url)["path"] . $a_href;
 				continue;
 			} else if (substr($a_href, 0, 3) == "../") {
 				$a_href = parse_url($base_url)["scheme"]."://".parse_url($base_url)["host"]."/".$a_href;
@@ -169,6 +169,8 @@ function scraper($base_url)
 	@$document->loadHTML($html);
 	$xpath = new DOMXPath($document);
 
+	// file_put_contents('text.txt', $html);
+
 	$is_first_data_exist = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
 
 	if (!empty($is_first_data_exist)) {
@@ -196,12 +198,11 @@ function scraper($base_url)
  */
 function sanitize($input)
 {
-	$data = preg_replace(TEXT_CLEANER, '', $input);
+	$data = preg_replace(TEXT_CLEANER, '', trim($input));
 	in_array(mb_substr($data, 0, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', 0, 1)) : false;
 	in_array(mb_substr($data, -1, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', -1, 1)) : false;
-	$data = trim($data);
 	
-	return($data);
+	return(trim($data));
 }
 
 /**
@@ -225,8 +226,12 @@ function database($records)
 		if (mysqli_connect_errno()) {
 			exit('Connection is failed! ' . mysqli_error($connection));
 		} else {
-			mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
-			mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
+			// mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
+			// mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
+
+			mysqli_set_charset($connection, 'utf8');
+			mysqli_query($connection, "SET CHARACTER SET 'utf8'");
+			mysqli_query($connection, "SET SESSION collation_connection ='utf8_turkish_ci'");
 		}		
 	}
 	// Connection control <---
