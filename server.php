@@ -1,12 +1,12 @@
 <?php
-header("Content-Type: text/html; charset=utf-8");
+header('Content-Type: text/html; charset=utf-8');
 
 /**
  * @package     Milou_v1
  * @author      Emre Can ÖZTAŞ (ecoz) <oztasemrecan@gmail.com>
  * @copyright   Copyright (c) 2018, Emre Can ÖZTAŞ. (https://emrecanoztas.com/)
  * @license     http://opensource.org/licenses/MIT  MIT License
- * @link        https://github.com/oztasemrecan/php-ping
+ * @link        https://github.com/oztasemrecan/Milou_v1
  * @since       Version 1.0.0
  */
 
@@ -20,40 +20,36 @@ gc_enable();
 defined('ROOT_PATH') or define('ROOT_PATH', realpath(__DIR__));
 defined('DIR_SEP') or define('DIR_SEP', '/');
 
-// Include file(s).
+// Include config file.
 include(ROOT_PATH . DIR_SEP . 'config.php');
 
 // CONTROLS
-// cURL control
-!curl_version() ? exit('cURL is not found!') : true; 
-// PHP version control
-!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true;
-// CLI running control
-!php_sapi_name() === 'cli' ? exit('This is for CLI programmers not for browserBoys!') : true;
+!is_callable('curl_version') ? exit('cURL is not found!') : true; // cURL control
+!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true; // PHP version control
+PHP_SAPI != 'cli' ? exit('This is for CLI programmers not for browserBoys!') : true; // CLI control
 
 // Define global variable(s).
-$page_details = array();
+$data_file 		= ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data']['data_file'] . '.' . SYSTEM_SETTINGS['data']['file_extension'];
+$page_details 	= array();
 
 /** Main block */
-$file = ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data_file'];
-if (file_exists($file)) {
-	$page = file_get_contents($file); // read data.txt
+if (file_exists($data_file)) {
+	$page = file_get_contents($data_file); // read data file
 	if (!empty($page)) {
 		$page_details = array_map('trim', explode(',', $page));
         $base_url     = $page_details[0];
         if (preg_match(URL_FORMAT, $base_url)) {
             $const_url    = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
 			array_shift($page_details);
-
 			crawler($base_url, $const_url); // Start
         } else {
         	exit('$base_url is not URL!');
         }
 	} else {
-		exit(SYSTEM_SETTINGS['data_file'] . ' is empty!');
+		exit('Data file is empty!');
 	}
 } else {
-	exit(SYSTEM_SETTINGS['data_file'] . ' is not found!');
+	exit('Data file is not found!');
 }
 
 /**
@@ -65,6 +61,8 @@ if (file_exists($file)) {
 function crawler($base_url, $const_url)
 {
 	global $page_details;
+	
+	static $page_number = 0;
 	static $found_url   = array();
 	static $visited_url = array();
 
@@ -115,7 +113,9 @@ function crawler($base_url, $const_url)
 					$found_url[]   = $a_href;
 					$visited_url[] = $a_href;
 
-					echo(PHP_EOL . $a_href . PHP_EOL);
+					echo(PHP_EOL . $page_number . ' - ' . $a_href . PHP_EOL);
+					$page_number++;
+					
 					!empty($page_details) ? scraper($a_href) : null;
 				}
 			}
@@ -143,8 +143,6 @@ function crawler($base_url, $const_url)
 function scraper($base_url)
 {
 	global $page_details;
-	static $page_number = 0;
-
 	$page_content = array();
 
 	$curl = curl_init();
@@ -169,9 +167,7 @@ function scraper($base_url)
 	@$document->loadHTML($html);
 	$xpath = new DOMXPath($document);
 
-	// file_put_contents('text.txt', $html);
-
-	$is_first_data_exist = @$xpath->query(trim($page_details[0]))->item(0)->textContent; // Data control: first field
+	$is_first_data_exist = @$xpath->query(trim($page_details[0]))->item(0)->textContent;
 
 	if (!empty($is_first_data_exist)) {
 		foreach ($page_details as $detail) {
@@ -184,9 +180,12 @@ function scraper($base_url)
 			}
 		}
 
+		// Generate unique id
+		$generate_uniq_id = mb_substr(str_shuffle(strtoupper(md5(uniqid(rand(), true)))), 0, 10);
+		array_unshift($page_content, $generate_uniq_id);
 		array_push($page_content, $base_url);
 		print_r($page_content);
-
+		
 		database($page_content);
 	}
 }

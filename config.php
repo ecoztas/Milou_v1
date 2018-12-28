@@ -6,14 +6,16 @@ defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
  * @author      Emre Can ÖZTAŞ (ecoz) <oztasemrecan@gmail.com>
  * @copyright   Copyright (c) 2018, Emre Can ÖZTAŞ. (https://emrecanoztas.com/)
  * @license     http://opensource.org/licenses/MIT  MIT License
- * @link        https://github.com/oztasemrecan/php-ping
+ * @link        https://github.com/oztasemrecan/Milou_v1
  * @since       Version 1.0.0
  */
 
 // System settings
 defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
-    'data_dir'       => 'data/',
-    'data_file'      => 'data.txt',
+    'data' => array(
+        'data_file'      => 'data',
+        'file_extension' => 'txt'
+    ),
     'database'       => array(
         'hostname' => 'localhost',
         'username' => 'root',
