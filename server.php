@@ -24,9 +24,9 @@ defined('DIR_SEP') or define('DIR_SEP', '/');
 include(ROOT_PATH . DIR_SEP . 'config.php');
 
 // CONTROLS
-!is_callable('curl_version') ? exit('cURL is not found!') : true; // cURL control
-!phpversion() >= 7 ? exit('PHP version must be >= 7.0.0') : true; // PHP version control
-PHP_SAPI != 'cli' ? exit('This is for CLI programmers not for browserBoys!') : true; // CLI control
+is_callable('curl_version') ? true : exit('cURL is not found!');
+phpversion() >= 7 ? true : exit('PHP version must be >= 7.0.0');
+php_sapi_name() === 'cli' ? true : exit('This is for CLI programmers not for browserBoys!');
 
 // Define global variable(s).
 $data_file 		= ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data']['data_file'] . '.' . SYSTEM_SETTINGS['data']['file_extension'];
@@ -172,17 +172,24 @@ function scraper($base_url)
 	if (!empty($is_first_data_exist)) {
 		foreach ($page_details as $detail) {
 			if ($detail === 'null' || $detail === null) {
-				array_push($page_content, '-');
+				array_push($page_content, SYSTEM_SETTINGS['data']['empty_data_name']);
 			} else {
-				$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
-				$data = sanitize($data);
-				!empty(trim($data)) ? array_push($page_content, $data) : array_push($page_content, '-');				
+				if (assert($xpath->query($detail)) !== false) {
+					array_push($page_content, $detail);
+				} else {
+					$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
+					$data = sanitize($data);
+					!empty(trim($data)) ? array_push($page_content, $data) : array_push($page_content, SYSTEM_SETTINGS['data']['empty_data_name']);						
+				}			
 			}
 		}
 
 		// Generate unique id
 		$generate_uniq_id = mb_substr(str_shuffle(strtoupper(md5(uniqid(rand(), true)))), 0, 10);
+		$fetching_time = date('Y-m-d');
+		
 		array_unshift($page_content, $generate_uniq_id);
+		array_push($page_content, $fetching_time);
 		array_push($page_content, $base_url);
 		print_r($page_content);
 		
@@ -200,8 +207,9 @@ function sanitize($input)
 	$data = preg_replace(TEXT_CLEANER, '', trim($input));
 	in_array(mb_substr($data, 0, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', 0, 1)) : false;
 	in_array(mb_substr($data, -1, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', -1, 1)) : false;
+	$data = ucwords(trim($data));
 	
-	return(trim($data));
+	return($data);
 }
 
 /**

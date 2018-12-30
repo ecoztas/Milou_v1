@@ -13,8 +13,9 @@ defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
 // System settings
 defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
     'data' => array(
-        'data_file'      => 'data',
-        'file_extension' => 'txt'
+        'data_file'      	=> 'data',
+        'file_extension' 	=> 'txt',
+		'empty_data_name' 	=> 'Belirtilmemiş' 
     ),
     'database'       => array(
         'hostname' => 'localhost',
