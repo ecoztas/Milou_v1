@@ -13,17 +13,17 @@ defined('ROOT_PATH') or exit('ROOT_PATH is not found!');
 // System settings
 defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
     'data' => array(
-        'data_file'      	=> 'data',
-        'file_extension' 	=> 'txt',
-		'empty_data_name' 	=> 'Belirtilmemiş' 
+        'data_file'       => 'data',
+        'file_extension'  => 'txt',
+        'empty_data_name' => 'Belirtilmemiş'
     ),
-    'database'       => array(
+    'database' => array(
         'hostname' => 'localhost',
         'username' => 'root',
         'password' => '',
         'db_name'  => 'db_firma',
         'db_table' => 'tbl_firma',
-        'schema'   => array(
+        'schema' => array(
             'firma_adi',
             'sektor',
             'adres',
@@ -33,9 +33,10 @@ defined('SYSTEM_SETTINGS') or define('SYSTEM_SETTINGS', array(
             'telefon_2',
             'e_posta',
             'website',
-            'f_url' 
-            ),
-        'charset'  => 'UTF8'
+            'f_url'
+        ),
+        'charset'   => 'UTF8',
+        'collation' => 'utf8_turkish_ci'
     )
 ));
 
@@ -58,15 +59,15 @@ defined('URL_FORMAT') or define('URL_FORMAT', '/^(http|https|ftp):\/\/([A-Z0-9][
 
 // Text clearer
 defined('TEXT_CLEANER') or define('TEXT_CLEANER', array(
-    '@<script[^>]*?>.*?</script>@si',   // Strip out javascript
-    '@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
-    '@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
-    '@<![\s\S]*?--[ \t\n\r]*>@'         // Strip multi-line comments
+    '@<script[^>]*?>.*?</script>@si', // Strip out javascript
+    '@<[\/\!]*?[^<>]*?>@si', // Strip out HTML tags
+    '@<style[^>]*?>.*?</style>@siU', // Strip style tags properly
+    '@<![\s\S]*?--[ \t\n\r]*>@' // Strip multi-line comments
 ));
 
 // Punctuation characters list
 defined('MARKS_LIST') or define('MARKS_LIST', array(
-    '+', 
+    '+',
     ',',
     '.',
     '-',
@@ -127,5 +128,5 @@ defined('MARKS_LIST') or define('MARKS_LIST', array(
     '†',
     '‡',
     '‰',
-    '‱',
+    '‱'
 ));

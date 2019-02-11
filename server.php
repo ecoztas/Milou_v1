@@ -116,7 +116,10 @@ function crawler($base_url, $const_url)
 					echo(PHP_EOL . $page_number . ' - ' . $a_href . PHP_EOL);
 					$page_number++;
 					
-					!empty($page_details) ? scraper($a_href) : null;
+					// !empty($page_details) ? scraper($a_href) : null;
+					if (!empty($page_details)) {
+						scraper($a_href);
+					}
 				}
 			}
 		}
@@ -221,7 +224,9 @@ function database($records)
 {
 	static $connection = null;
 
-	// ---> Connection control
+	// ------------------------------------------------------------------------
+	// Connection control
+	// ------------------------------------------------------------------------
 	if (!@mysqli_ping($connection)) {
 		$connection = mysqli_connect(
 			SYSTEM_SETTINGS['database']['hostname'],
@@ -233,15 +238,16 @@ function database($records)
 		if (mysqli_connect_errno()) {
 			exit('Connection is failed! ' . mysqli_error($connection));
 		} else {
-			// mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
-			// mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
+			mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
+			mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
+			mysqli_query($connection, "SET SESSION collation_connection=" . SYSTEM_SETTINGS['database']['collation']);
 
-			mysqli_set_charset($connection, 'utf8');
-			mysqli_query($connection, "SET CHARACTER SET 'utf8'");
-			mysqli_query($connection, "SET SESSION collation_connection ='utf8_turkish_ci'");
+			// mysqli_set_charset($connection, 'utf8');
+			// mysqli_query($connection, "SET CHARACTER SET 'utf8'");
+			// mysqli_query($connection, "SET SESSION collation_connection ='utf8_turkish_ci'");
 		}		
 	}
-	// Connection control <---
+	// ------------------------------------------------------------------------
 
 	$columns = implode(', ', SYSTEM_SETTINGS['database']['schema']);
 	$records = '\'' . implode('\',' . '\'', $records) . '\'';
