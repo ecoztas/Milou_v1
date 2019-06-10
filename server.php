@@ -102,17 +102,16 @@ $data_file 		= ROOT_PATH . DIRECTORY_SEPERATOR . SYSTEM_SETTINGS['data']['data_f
 if (file_exists($data_file)) {
 	$page = file_get_contents($data_file);
 	if (!empty($page)) {
-        $page_details = array_filter(array_map('trim', explode(',', $page)), function($line) {
-            if (isset($line)) {
-                return($line);
+        $page_details = array_filter(array_map('trim', explode(',', $page)), function($page_line) {
+            if (isset($page_line)) {
+                return($page_line);
             }
         });
         $base_url = $page_details[0];
         if (filter_var($base_url, FILTER_VALIDATE_URL)) {
             $const_url = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
 			array_shift($page_details);
-
-			crawler($base_url, $const_url);
+			crawler($base_url, $const_url); // start
         } else {
         	exit('$base_url is not URL!');
         }
@@ -187,8 +186,7 @@ function crawler($base_url, $const_url)
 					echo(PHP_EOL . $page_number . ' - ' . $a_href . PHP_EOL);
 					$page_number++;
 					
-					// Run scraper()
-					!(empty($page_details)) ? scraper($a_href) : false;
+					!(empty($page_details)) ? scraper($a_href) : false; // Run scraper
 				}
 			}
 		}
@@ -254,8 +252,8 @@ function scraper($base_url)
 		}
 
 		// Generate unique id
-		$generate_uniq_id = mb_substr(str_shuffle(strtoupper(md5(uniqid(rand(), true)))), 0, 10);
-		$fetching_time = date('Y-m-d');
+		$generate_uniq_id 	= mb_substr(str_shuffle(strtoupper(md5(uniqid(rand(), true)))), 0, 10);
+		$fetching_time 		= date('Y-m-d');
 		
 		array_unshift($page_content, $generate_uniq_id);
 		array_push($page_content, $fetching_time);
@@ -276,7 +274,6 @@ function sanitize($input)
 		'@<style[^>]*?>.*?</style>@siU',
 		'@<![\s\S]*?--[ \t\n\r]*>@'
 	);
-
 	$data = preg_replace($sanitize_rules, '', trim($input));
 	
 	return($data);
@@ -288,9 +285,6 @@ function database($records)
 {
 	static $connection = null;
 
-	// ------------------------------------------------------------------------
-	// Connection control
-	// ------------------------------------------------------------------------
 	if (!@mysqli_ping($connection)) {
 		$connection = mysqli_connect(
 			SYSTEM_SETTINGS['database']['hostname'],
@@ -305,18 +299,16 @@ function database($records)
 			mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
 			mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
 			mysqli_query($connection, "SET SESSION collation_connection=" . SYSTEM_SETTINGS['database']['collation']);
-
-			// mysqli_set_charset($connection, 'utf8');
-			// mysqli_query($connection, "SET CHARACTER SET 'utf8'");
-			// mysqli_query($connection, "SET SESSION collation_connection ='utf8_turkish_ci'");
 		}		
 	}
-	// ------------------------------------------------------------------------
 
 	$columns = implode(', ', SYSTEM_SETTINGS['database']['schema']);
 	$records = '\'' . implode('\',' . '\'', $records) . '\'';
 	$query   = "INSERT INTO " . SYSTEM_SETTINGS['database']['db_table'] . " ($columns) VALUES ($records)";
 	$result  = mysqli_query($connection, $query);
 
-	!$result ? exit('Failed! ' . mysqli_error($connection)) : true;
+	if (!result) {
+		trigger_error('Failed ' . mysqli_error($connection));
+		exit();
+	}
 }
