@@ -218,10 +218,16 @@ function scraper($base_url)
 	curl_setopt_array($curl, array(
 		CURLOPT_URL            => $base_url,
 		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_HEADER         => false,
 		CURLOPT_FOLLOWLOCATION => true,
+		CURLOPT_ENCODING       => '',
 		CURLOPT_USERAGENT      => USER_AGENT,
 		CURLOPT_HTTPHEADER     => HTTP_HEADER,
-		CURLOPT_ENCODING       => ''
+		CURLOPT_AUTOREFERER    => true,
+		CURLOPT_CONNECTTIMEOUT => 120,
+		CURLOPT_TIMEOUT        => 120,
+		CURLOPT_MAXREDIRS      => 10,
+		CURLOPT_SSL_VERIFYPEER => false
 	));
 	$html = curl_exec($curl);
 	curl_close($curl);
