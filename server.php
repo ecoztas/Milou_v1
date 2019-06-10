@@ -1,47 +1,125 @@
-<?php
-header('Content-Type: text/html; charset=utf-8');
-
-/**
- * @package     Milou_v1
- * @author      Emre Can ÖZTAŞ (ecoz) <oztasemrecan@gmail.com>
- * @copyright   Copyright (c) 2018, Emre Can ÖZTAŞ. (https://emrecanoztas.com/)
- * @license     http://opensource.org/licenses/MIT  MIT License
- * @link        https://github.com/oztasemrecan/Milou_v1
- * @since       Version 1.0.0
- */
-
-// php.ini Settings.
-error_reporting(E_ALL);
-ini_set('memory_limit', -1);
-ini_set('max_execution_time', -1);
+<?php header('Content-Type: text/html; charset=utf-8');
+# ##############################################################################
+# PACKAGE:		Milou_v1
+# AUTHOR		Emre Can ÖZTAŞ <me@emrecanoztas.com>
+# COPYRIGHT		Copyright (c) 2018, Emre Can ÖZTAŞ. (https://emrecanoztas.com/)
+# LICENSE		http://opensource.org/licenses/MIT  MIT License
+# LINK			https://github.com/ecoztas/Milou_v1
+# SINCE			Version 1.0.0
+# ##############################################################################
+# ------------------------------------------------------------------------------
+# SYSTEM CONTROLS.
+# ------------------------------------------------------------------------------
+if (!function_exists('curl_version')) {
+	trigger_error('cURL is not found!');
+	exit();
+} else {
+	if (php_sapi_name() !== 'cli') {
+		trigger_error('This is for CLI programmers not for browser boys!');
+		exit();
+	}
+}
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# PHP.INI SETTINGS
+# ------------------------------------------------------------------------------
+@ini_set('default_charset', 'utf-8');
+@ini_set('memory_limit', '1024M');
+@ini_set('file_uploads', 1);
+@ini_set('max_execution_time', -1);
+@ini_set('max_input_time', -1);
+@ini_set('upload_max_filesize', '5M');
+@ini_set('session.gc_maxlifetime', 14400);
+@ini_set('date.timezone', 'Europe/Istanbul');
+@ini_set('expose_php', -1);
+@ini_set('allow_url_fopen', -1);
+@ini_set('allow_url_include', -1);
 gc_enable();
-
-// Define constant.
-defined('ROOT_PATH') or define('ROOT_PATH', realpath(__DIR__));
-defined('DIR_SEP') or define('DIR_SEP', '/');
-
-// Include config file.
-include(ROOT_PATH . DIR_SEP . 'config.php');
-
-// CONTROLS
-is_callable('curl_version') ? true : exit('cURL is not found!');
-phpversion() >= 7 ? true : exit('PHP version must be >= 7.0.0');
-php_sapi_name() === 'cli' ? true : exit('This is for CLI programmers not for browserBoys!');
-
-// Define global variable(s).
-$data_file 		= ROOT_PATH . DIR_SEP . SYSTEM_SETTINGS['data']['data_file'] . '.' . SYSTEM_SETTINGS['data']['file_extension'];
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEFINE SYSTEM CONSTANTS
+# ------------------------------------------------------------------------------
+defined('DIRECTORY_SEPERATOR') or define('DIRECTORY_SEPERATOR', '/');
+defined('ROOT_PATH') or define('ROOT_PATH', realpath(dirname(__FILE__)) . DIRECTORY_SEPERATOR);
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEFINE DEBUG MODE
+# ------------------------------------------------------------------------------
+defined('DEBUG_MODE') or define('DEBUG_MODE', TRUE);
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEBUG_MODE CONTROL
+# ------------------------------------------------------------------------------
+if(DEBUG_MODE){
+    @ini_set('display_error', 1);
+    error_reporting(E_ALL);
+    libxml_use_internal_errors(false);
+} else {
+    @ini_set('display_error', -1);
+    error_reporting(-1);
+    libxml_use_internal_errors(true);
+}
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEFINE USER AGENT
+# ------------------------------------------------------------------------------
+const USER_AGENT  = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEFINE HTTP HEADER
+# ------------------------------------------------------------------------------
+const HTTP_HEADER = array (
+    'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+    'Cache-Control: max-age=0',
+    'Connection: keep-alive',
+    'Keep-Alive: 300',
+    'Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.7',
+    'Accept-Language: en-us,en;q=0.5',
+    'Pragma: '
+);
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEFINE SYSTEM SETTINGS
+# ------------------------------------------------------------------------------
+const SYSTEM_SETTINGS = array(
+    'data' => array(
+        'data_file'       => 'data.txt',
+        'empty_data_name' => 'None'
+    ),
+    'database' => array(
+        'hostname' => 'localhost',
+        'username' => 'root',
+        'password' => '',
+        'db_name'  => 'db_data',
+        'db_table' => 'tbl_data',
+        'schema' => array(
+			'name',
+			'surname',
+			'age'
+        ),
+        'charset'   => 'UTF8',
+        'collation' => 'utf8_turkish_ci'
+    )
+);
+# ------------------------------------------------------------------------------
+# /MAIN BLOCK
+# ------------------------------------------------------------------------------
 $page_details 	= array();
-
-/** Main block */
+$data_file 		= ROOT_PATH . DIRECTORY_SEPERATOR . SYSTEM_SETTINGS['data']['data_file'];
 if (file_exists($data_file)) {
-	$page = file_get_contents($data_file); // read data file
+	$page = file_get_contents($data_file);
 	if (!empty($page)) {
-		$page_details = array_map('trim', explode(',', $page));
-        $base_url     = $page_details[0];
-        if (preg_match(URL_FORMAT, $base_url)) {
-            $const_url    = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
+        $page_details = array_filter(array_map('trim', explode(',', $page)), function($line) {
+            if (isset($line)) {
+                return($line);
+            }
+        });
+        $base_url = $page_details[0];
+        if (filter_var($base_url, FILTER_VALIDATE_URL)) {
+            $const_url = parse_url($base_url)['scheme'] . '://' . parse_url($base_url)['host'];
 			array_shift($page_details);
-			crawler($base_url, $const_url); // Start
+
+			crawler($base_url, $const_url);
         } else {
         	exit('$base_url is not URL!');
         }
@@ -51,13 +129,12 @@ if (file_exists($data_file)) {
 } else {
 	exit('Data file is not found!');
 }
-
-/**
- * Crawler method is crawling URL from web page.
- * @param  string $base_url
- * @param  string $const_url
- * @return void
- */
+# ------------------------------------------------------------------------------
+# MAIN BLOCK/
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# /FUNCTION: CRAWLER
+# ------------------------------------------------------------------------------
 function crawler($base_url, $const_url)
 {
 	global $page_details;
@@ -70,17 +147,21 @@ function crawler($base_url, $const_url)
 	curl_setopt_array($curl, array(
 		CURLOPT_URL            => $base_url,
 		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_HEADER         => false,
 		CURLOPT_FOLLOWLOCATION => true,
+		CURLOPT_ENCODING       => '',
 		CURLOPT_USERAGENT      => USER_AGENT,
 		CURLOPT_HTTPHEADER     => HTTP_HEADER,
-		CURLOPT_ENCODING       => ''
+		CURLOPT_AUTOREFERER    => true,
+		CURLOPT_CONNECTTIMEOUT => 120,
+		CURLOPT_TIMEOUT        => 120,
+		CURLOPT_MAXREDIRS      => 10,
+		CURLOPT_SSL_VERIFYPEER => false
 	));
 	$html = curl_exec($curl);
 	curl_close($curl);
-
 	unset($curl);
 
-	libxml_use_internal_errors(true);
 	$document = new DOMDocument();
 	@$document->loadHTML($html);
 
@@ -116,10 +197,8 @@ function crawler($base_url, $const_url)
 					echo(PHP_EOL . $page_number . ' - ' . $a_href . PHP_EOL);
 					$page_number++;
 					
-					// !empty($page_details) ? scraper($a_href) : null;
-					if (!empty($page_details)) {
-						scraper($a_href);
-					}
+					// Run scraper()
+					!(empty($page_details)) ? scraper($a_href) : false;
 				}
 			}
 		}
@@ -127,22 +206,22 @@ function crawler($base_url, $const_url)
 
 	array_shift($found_url);
 
-	if (count($found_url) > 0) { // Go on
+	if (count($found_url) > 0) {
 		foreach ($found_url as $base_url) {
 			crawler($base_url, $const_url);
 		}	
-	} else { // Finished
+	} else {
 		echo(PHP_EOL);
 		echo('Crawling finished');
 		echo(PHP_EOL);
 	}
 }
-
-/**
- * Scraper method is scraping data from web page.
- * @param  string $base_url
- * @return void
- */
+# ------------------------------------------------------------------------------
+# FUNCTION: CRAWLER/
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# /FUNCTION: SCRAPER
+# ------------------------------------------------------------------------------
 function scraper($base_url)
 {
 	global $page_details;
@@ -199,27 +278,28 @@ function scraper($base_url)
 		database($page_content);
 	}
 }
-
-/**
- * Sanitize datas.
- * @param  string $input
- * @return string
- */
+# ------------------------------------------------------------------------------
+# FUNCTION: SCRAPER/
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# /FUNCTION: SANITIZE
+# ------------------------------------------------------------------------------
 function sanitize($input)
 {
-	$data = preg_replace(TEXT_CLEANER, '', trim($input));
-	in_array(mb_substr($data, 0, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', 0, 1)) : false;
-	in_array(mb_substr($data, -1, 1), MARKS_LIST) ? $data = trim(substr_replace($data, '', -1, 1)) : false;
-	$data = ucwords(trim($data));
+	$sanitize_rules = array(
+		'@<script[^>]*?>.*?</script>@si', 
+		'@<[\/\!]*?[^<>]*?>@si',
+		'@<style[^>]*?>.*?</style>@siU',
+		'@<![\s\S]*?--[ \t\n\r]*>@'
+	);
+
+	$data = preg_replace($sanitize_rules, '', trim($input));
 	
 	return($data);
 }
-
-/**
- * Database connection and saving records
- * @param  array $records 
- * @return void
- */
+# ------------------------------------------------------------------------------
+# FUNCTION: SANITIZE/
+# ------------------------------------------------------------------------------
 function database($records)
 {
 	static $connection = null;
@@ -256,3 +336,6 @@ function database($records)
 
 	!$result ? exit('Failed! ' . mysqli_error($connection)) : true;
 }
+# ------------------------------------------------------------------------------
+# FUNCTION: SANITIZE/
+# ------------------------------------------------------------------------------
