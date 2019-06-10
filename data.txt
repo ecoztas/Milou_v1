@@ -1,1 +1,2 @@
-https://sahibinden.com
+https://sahibinden.com,
+//*[@id="classifiedDetail"]/div[1]/div[1]/h1

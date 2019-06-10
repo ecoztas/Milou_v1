@@ -162,24 +162,24 @@ function crawler($base_url, $const_url)
 			$a_href = $a->getAttribute('href');
 
 			if (substr($a_href, 0, 1) == "/" && substr($a_href, 0, 2) != "//") {
-				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . $a_href;
+				$a_href = @parse_url($base_url)["scheme"] . "://" . @parse_url($base_url)["host"] . $a_href;
 			} else if (substr($a_href, 0, 2) == "//") {
-				$a_href = parse_url($base_url)["scheme"] . ":" . $a_href;
+				$a_href = @parse_url($base_url)["scheme"] . ":" . $a_href;
 			} else if (substr($a_href, 0, 2) == "./") {
-				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . dirname(parse_url($base_url)["path"]).substr($a_href, 1);
+				$a_href = @parse_url($base_url)["scheme"] . "://" . @parse_url($base_url)["host"] . dirname(@parse_url($base_url)["path"]).substr($a_href, 1);
 			} else if (substr($a_href, 0, 1) == "#") {
-				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . parse_url($base_url)["path"] . $a_href;
+				$a_href = @parse_url($base_url)["scheme"] . "://" . @parse_url($base_url)["host"] . @parse_url($base_url)["path"] . $a_href;
 				continue;
 			} else if (substr($a_href, 0, 3) == "../") {
-				$a_href = parse_url($base_url)["scheme"]."://".parse_url($base_url)["host"]."/".$a_href;
+				$a_href = @parse_url($base_url)["scheme"]."://".@parse_url($base_url)["host"]."/".$a_href;
 			} else if (substr($a_href, 0, 11) == "javascript:") {
 				continue;
 			} else if (substr($a_href, 0, 5) != "https" && substr($a_href, 0, 4) != "http") {
-				$a_href = parse_url($base_url)["scheme"] . "://" . parse_url($base_url)["host"] . "/" . $a_href;
+				$a_href = @parse_url($base_url)["scheme"] . "://" . @parse_url($base_url)["host"] . "/" . $a_href;
 			}
 
 			if (!in_array($a_href, $visited_url)) {
-				$parse_url = parse_url($a_href)['scheme'] . '://' . parse_url($a_href)['host'];
+				$parse_url = @parse_url($a_href)['scheme'] . '://' . @parse_url($a_href)['host'];
 				if ($const_url === $parse_url) {
 					$found_url[]   = $a_href;
 					$visited_url[] = $a_href;
@@ -231,13 +231,11 @@ function scraper($base_url)
 	));
 	$html = curl_exec($curl);
 	curl_close($curl);
-
 	unset($curl);
 
     $page_encoding = strtolower(mb_detect_encoding($html));
     $page_encoding != 'utf-8' ? $html = mb_convert_encoding($html, 'ISO-8859-1', 'utf-8') : null;
 
-	libxml_use_internal_errors(true);
 	$document = new DOMDocument();
 	@$document->loadHTML($html);
 	$xpath = new DOMXPath($document);
@@ -249,13 +247,9 @@ function scraper($base_url)
 			if ($detail === 'null' || $detail === null) {
 				array_push($page_content, SYSTEM_SETTINGS['data']['empty_data_name']);
 			} else {
-				if (assert($xpath->query($detail)) !== false) {
-					array_push($page_content, $detail);
-				} else {
-					$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
-					$data = sanitize($data);
-					!empty(trim($data)) ? array_push($page_content, $data) : array_push($page_content, SYSTEM_SETTINGS['data']['empty_data_name']);						
-				}			
+				$data = (string)trim(@$xpath->query(trim($detail))->item(0)->textContent);
+				$data = sanitize($data);
+				!empty(trim($data)) ? array_push($page_content, $data) : array_push($page_content, SYSTEM_SETTINGS['data']['empty_data_name']);		
 			}
 		}
 
