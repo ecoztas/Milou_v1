@@ -51,7 +51,7 @@ if (DEBUG_MODE) {
 	error_reporting(E_ALL);
 	libxml_use_internal_errors(false);
 } else {
-	@ini_set('display_error', -1);
+	@ini_set('display_error', '-1');
 	error_reporting(-1);
 	libxml_use_internal_errors(true);
 }
@@ -273,10 +273,8 @@ function sanitize($input)
 		'@<style[^>]*?>.*?</style>@siU',
 		'@<![\s\S]*?--[ \t\n\r]*>@'
 	);
-	
-	return(
-		preg_replace($sanitize_rules, '', trim(addslashes($input)))
-	);
+
+	return (preg_replace($sanitize_rules, '', trim(addslashes($input))));
 }
 # ------------------------------------------------------------------------------
 # FUNCTION: DATABASE
@@ -284,21 +282,17 @@ function sanitize($input)
 function database($records)
 {
 	static $connection = null;
-
 	if (!@mysqli_ping($connection)) {
-		$connection = mysqli_connect(
-			SYSTEM_SETTINGS['database']['hostname'],
-			SYSTEM_SETTINGS['database']['username'],
-			SYSTEM_SETTINGS['database']['password'],
-			SYSTEM_SETTINGS['database']['db_name']
-		);
-
-		if (mysqli_connect_errno()) {
-			exit('Connection is failed! ' . mysqli_error($connection));
-		} else {
-			mysqli_set_charset($connection, SYSTEM_SETTINGS['database']['charset']);
-			mysqli_query($connection, "SET NAMES "  . SYSTEM_SETTINGS['database']['charset']);
-			mysqli_query($connection, "SET SESSION collation_connection=" . SYSTEM_SETTINGS['database']['collation']);
+		try {
+			$connection = new PDO(
+				"mysql:host=" . SYSTEM_SETTINGS['database']['hostname'] . ";dbname=" . SYSTEM_SETTINGS['database']['db_name'],
+				SYSTEM_SETTINGS['database']['username'],
+				SYSTEM_SETTINGS['database']['password']
+			);
+			$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$connection->exec('set names ' . SYSTEM_SETTINGS['database']['charset']);
+		} catch (PDOException $error) {
+			echo ($error->getMessage());
 		}
 	}
 
