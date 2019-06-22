@@ -33,7 +33,7 @@ if (!function_exists('curl_version')) {
 @ini_set('expose_php', '-1');
 @ini_set('allow_url_fopen', '-1');
 @ini_set('allow_url_include', '-1');
-gc_enable();
+gc_collect_cycles();
 # ------------------------------------------------------------------------------
 # DEFINE: SYSTEM CONSTANTS
 # ------------------------------------------------------------------------------
@@ -273,9 +273,10 @@ function sanitize($input)
 		'@<style[^>]*?>.*?</style>@siU',
 		'@<![\s\S]*?--[ \t\n\r]*>@'
 	);
-	$data = preg_replace($sanitize_rules, '', trim($input));
-
-	return ($data);
+	
+	return(
+		preg_replace($sanitize_rules, '', trim(addslashes($input)))
+	);
 }
 # ------------------------------------------------------------------------------
 # FUNCTION: DATABASE
