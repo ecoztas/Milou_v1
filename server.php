@@ -297,9 +297,9 @@ function database($records)
 	}
 
 	$columns = implode(', ', SYSTEM_SETTINGS['database']['schema']);
-	$records = '\'' . implode('\',' . '\'', $records) . '\'';
+	$records = "'" . implode("'," . "'", $records) . "'";
 	$query   = "INSERT INTO " . SYSTEM_SETTINGS['database']['db_table'] . " ($columns) VALUES ($records)";
-	$result  = mysqli_query($connection, $query);
+	$result  = $connection->exec($query);
 
 	!($result) ? exit('Failed ' . mysqli_error($connection)) : true;
 }
