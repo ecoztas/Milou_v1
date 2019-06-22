@@ -301,5 +301,5 @@ function database($records)
 	$query   = "INSERT INTO " . SYSTEM_SETTINGS['database']['db_table'] . " ($columns) VALUES ($records)";
 	$result  = $connection->exec($query);
 
-	!($result) ? exit('Failed ' . mysqli_error($connection)) : true;
+	!($result) ? exit('Database record saving is failed!') : true;
 }
