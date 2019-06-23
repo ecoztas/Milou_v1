@@ -149,7 +149,6 @@ function crawler($base_url, $const_url)
 	));
 	$html = curl_exec($curl);
 	curl_close($curl);
-	unset($curl);
 
 	$document = new DOMDocument();
 	@$document->loadHTML($html);
@@ -191,6 +190,12 @@ function crawler($base_url, $const_url)
 		}
 	}
 
+	garbage(array(
+		$curl,
+		$html,
+		$document
+	));
+
 	array_shift($found_url);
 
 	if (count($found_url) > 0) {
@@ -228,7 +233,6 @@ function scraper($base_url)
 	));
 	$html = curl_exec($curl);
 	curl_close($curl);
-	unset($curl);
 
 	$page_encoding = strtolower(mb_detect_encoding($html));
 	$page_encoding != 'utf-8' ? $html = mb_convert_encoding($html, 'ISO-8859-1', 'utf-8') : null;
@@ -259,22 +263,15 @@ function scraper($base_url)
 		array_push($page_content, $base_url);
 		print_r($page_content);
 
+		garbage(array(
+			$curl,
+			$html,
+			$document,
+			$xpath
+		));
+
 		database($page_content);
 	}
-}
-# ------------------------------------------------------------------------------
-# FUNCTION: SANITIZE
-# ------------------------------------------------------------------------------
-function sanitize($input)
-{
-	$sanitize_rules = array(
-		'@<script[^>]*?>.*?</script>@si',
-		'@<[\/\!]*?[^<>]*?>@si',
-		'@<style[^>]*?>.*?</style>@siU',
-		'@<![\s\S]*?--[ \t\n\r]*>@'
-	);
-
-	return (preg_replace($sanitize_rules, '', trim(addslashes($input))));
 }
 # ------------------------------------------------------------------------------
 # FUNCTION: DATABASE
@@ -302,4 +299,35 @@ function database($records)
 	$result  = $connection->exec($query);
 
 	!($result) ? exit('Database record saving is failed!') : true;
+}
+# ------------------------------------------------------------------------------
+# FUNCTION: SANITIZE
+# ------------------------------------------------------------------------------
+function sanitize($input)
+{
+	$sanitize_rules = array(
+		'@<script[^>]*?>.*?</script>@si',
+		'@<[\/\!]*?[^<>]*?>@si',
+		'@<style[^>]*?>.*?</style>@siU',
+		'@<![\s\S]*?--[ \t\n\r]*>@'
+	);
+
+	return (preg_replace($sanitize_rules, '', trim(addslashes($input))));
+}
+# ------------------------------------------------------------------------------
+# FUNCTION: GARBAGE
+# ------------------------------------------------------------------------------
+function garbage($garbages)
+{
+	if (is_array($garbages)) {
+		foreach ($garbages as $garbage_item) {
+			if (isset($garbage_item)) {
+				unset($garbage_item);
+			}
+		}
+	} else {
+		if (isset($garbages)) {
+			unset($garbages);
+		}
+	}
 }
